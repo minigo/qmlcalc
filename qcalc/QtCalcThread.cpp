@@ -6,6 +6,9 @@
 
 #include <calc.h>
 
+#include <unistd.h>
+
+//! \brief Приоритет операции
 int precedence (QChar c)
 {
     if (c == '/' || c == '*')
@@ -16,6 +19,7 @@ int precedence (QChar c)
         return -1;
 }
 
+//! \brief перевод инфиксной записи выражения в постфиксную
 QStringList infixToPostfix (const QString &s)
 {
     QStringList result;
@@ -90,72 +94,65 @@ Worker::Worker (QtThreadSaveQueue<Request> &requestQueue,
 Worker::~Worker ()
 {}
 
-void Worker::start ()
-{
-    if (_timer == 0)
-        _timer = startTimer (100);
+void Worker::start () {
     calculate ();
-}
-
-void Worker::finish () {
-    if (_timer != 0)
-        killTimer (_timer);
 }
 
 void Worker::calculate ()
 {
-    auto request = _requestQueue.pop (); //popSync ();
-    if (!request)
-        return;
-
-    QStack<QString> stack;
-    auto postfix = infixToPostfix (request->_exp);
-    if (postfix.isEmpty ()) {
-        thread ()->sleep (request->_timeout);
-        _responceQueue.push ({request->_id, 0, -3});
-        return;
-    }
-
-    while (!postfix.isEmpty ())
+    //-- пока есть запросы
+    while (auto request = _requestQueue.popSync ())
     {
-        if (isOperation (postfix.at (postfix.size () - 1)))
+        //-- преобразование в постфиксную
+        QStack<QString> stack;
+        auto postfix = infixToPostfix (request._exp);
+        if (postfix.isEmpty ()) {
+            _responceQueue.push ({request._exp, request._id, 0, -3});
+            return;
+        }
+
+        short error {0};
+
+        while (!postfix.isEmpty ())
         {
-            bool bret {false};
-            //-- первый операнд
-            auto op1 = stack.pop ().toDouble (&bret);
-            if (!bret) {
-                thread ()->sleep (request->_timeout);
-                _responceQueue.push ({request->_id, 0, -3});
-                return;
+            if (isOperation (postfix.at (0)))
+            {
+                bool bret {false};
+                //-- первый операнд
+                auto op2 = stack.pop ().toDouble (&bret);
+                if (!bret) {
+                    _responceQueue.push ({request._exp, request._id, 0, -3});
+                    return;
+                }
+
+                //-- второй операнд
+                auto op1 = stack.pop ().toDouble (&bret);
+                if (!bret) {
+                    _responceQueue.push ({request._exp, request._id, 0, -3});
+                    return;
+                }
+
+                //-- расчитываем и сохраняем
+                double result = doIt (operation (postfix.at (0)), op1, op2, &error);
+                if (error != 0) {
+                    _responceQueue.push ({request._exp, request._id, result, error});
+                    return;
+                }
+
+                stack.push (QString::number (result));
+
+                //-- удаляем последний
+                postfix.removeAt (0);
             }
-
-            //-- второй операнд
-            auto op2 = stack.pop ().toDouble (&bret);
-            if (!bret) {
-                thread ()->sleep (request->_timeout);
-                _responceQueue.push ({request->_id, 0, -3});
-                return;
+            else {
+                //-- сохраняем операнд
+                stack.push (postfix.at (0));
+                postfix.removeAt (0);
             }
-
-            //-- расчитываем
-            short error;
-            auto result = doIt (operation (postfix.at (postfix.size () - 1)), op1, op2, &error);
-
-            //-- спим и отправляем результат
-            thread ()->sleep (request->_timeout);
-            _responceQueue.push ({request->_id, result, error});
         }
-        else {
-            //-- сохраняем операнд
-            stack.push (postfix.at (postfix.size () - 1));
-            postfix.removeAt (postfix.size () - 1);
-        }
+
+        //-- спим и отправляем результат
+        thread ()->sleep (request._timeout);
+        _responceQueue.push ({request._exp, request._id, stack.pop ().toDouble (), error});
     }
-}
-
-void Worker::timerEvent (QTimerEvent *event)
-{
-    if (event->timerId () != _timer)
-        return;
-    calculate ();
 }

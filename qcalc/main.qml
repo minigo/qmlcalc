@@ -16,6 +16,14 @@ Window {
         resultText.text = msg.toString ();
     }
 
+    function updateRequestQueueSize (msg) {
+        requestQueueSizeField.text = "Requests: " + msg.toString ();
+    }
+
+    function updateResponceQueueSize (msg) {
+        responceQueueSizeField.text = "Responces: " + msg.toString ();
+    }
+
     function appendErrorMessage (msg) {
         consoleTextEdit.text += "<font color=\"red\">" + msg + "</fond><br>";
     }
@@ -41,7 +49,7 @@ Window {
         height: parent.height * 2 / 10
         border.color: "white"
         border.width: 1
-        color: "#C2DED1"
+        color: "#DED9D4"
         Text {
             id: resultText
             anchors.fill: parent
@@ -60,14 +68,14 @@ Window {
         anchors.left: parent.left
         anchors.top: parent.top
         width: parent.width / 3
-        height: 50
+        height: 46
 
         border.color: "white"
         border.width: 1
 
         TextField {
             id: timeoutTextField
-            placeholderText: "Timeout in seconds"
+            placeholderText: "Timeout in seconds (0 by default)"
             cursorVisible: false
             font.pixelSize: parent.height * 2 / 3
 
@@ -82,11 +90,54 @@ Window {
     }
 
     Rectangle {
+        id: queueSizeArea
+        anchors.left: parent.left
+        anchors.top: timeoutArea.bottom
+        width: parent.width / 3
+        height: 46
+
+        border.color: "white"
+        border.width: 1
+
+        TextField {
+            id: requestQueueSizeField
+            text: "Requests: 0"
+            readOnly: true
+            cursorVisible: false
+            font.pixelSize: parent.height * 2 / 3
+
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: parent.width / 2
+
+            validator: IntValidator {bottom: 11}
+            background: Rectangle {color: "lightGray"}
+        }
+
+        TextField {
+            id: responceQueueSizeField
+            text: "Responces: 0"
+            readOnly: true
+            cursorVisible: false
+            font.pixelSize: parent.height * 2 / 3
+
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: parent.width / 2
+
+            validator: IntValidator {bottom: 11}
+            background: Rectangle {color: "lightGray"}
+        }
+    }
+
+    Rectangle {
         id: consoleArea
         width: parent.width / 3
         anchors.left: parent.left
-        anchors.top: timeoutArea.bottom
-        height: parent.height - timeoutArea.height
+        anchors.top: queueSizeArea.bottom
+        height: parent.height - timeoutArea.height - queueSizeArea.height
         border.color: "white"
         border.width: 1
         color: "#ECE5C7"
@@ -99,6 +150,7 @@ Window {
             anchors.top: parent.top
             textFormat: TextEdit.RichText
             font.pixelSize: parent.height / 50
+            wrapMode: Text.WordWrap
         }
     }
 
@@ -117,7 +169,7 @@ Window {
             y: 0
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#FDCF73"
             text: "+"
             onClicked: qtcalculator.slotAddSymbol ('+')
         }
@@ -128,7 +180,7 @@ Window {
             y: 0
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#FDCF73"
             text: "-"
             onClicked: qtcalculator.slotAddSymbol ('-')
         }
@@ -139,7 +191,7 @@ Window {
             y: 0
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#FDCF73"
             text: "*"
             onClicked: qtcalculator.slotAddSymbol ('*')
         }
@@ -150,7 +202,7 @@ Window {
             y: 0
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#FDCF73"
             text: "/"
             onClicked: qtcalculator.slotAddSymbol ('/')
         }
@@ -161,7 +213,7 @@ Window {
             y: parent.height / 5
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#9B878B"
             text: "7"
             onClicked: qtcalculator.slotAddSymbol ('7')
         }
@@ -172,7 +224,7 @@ Window {
             y: parent.height / 5
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#9B878B"
             text: "8"
             onClicked: qtcalculator.slotAddSymbol ('8')
         }
@@ -183,7 +235,7 @@ Window {
             y: parent.height / 5
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#9B878B"
             text: "9"
             onClicked: qtcalculator.slotAddSymbol ('9')
         }
@@ -194,7 +246,7 @@ Window {
             y: parent.height * 2 / 5
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#9B878B"
             text: "4"
             onClicked: qtcalculator.slotAddSymbol ('4')
         }
@@ -205,7 +257,7 @@ Window {
             y: parent.height * 2 / 5
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#9B878B"
             text: "5"
             onClicked: qtcalculator.slotAddSymbol ('5')
         }
@@ -216,7 +268,7 @@ Window {
             y: parent.height * 2 / 5
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#9B878B"
             text: "6"
             onClicked: qtcalculator.slotAddSymbol ('6')
         }
@@ -227,7 +279,7 @@ Window {
             y: parent.height * 3 / 5
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#9B878B"
             text: "1"
             onClicked: qtcalculator.slotAddSymbol ('1')
         }
@@ -238,7 +290,7 @@ Window {
             y: parent.height * 3 / 5
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#9B878B"
             text: "2"
             onClicked: qtcalculator.slotAddSymbol ('2')
         }
@@ -249,7 +301,7 @@ Window {
             y: parent.height * 3 / 5
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#9B878B"
             text: "3"
             onClicked: qtcalculator.slotAddSymbol ('3')
         }
@@ -260,7 +312,7 @@ Window {
             y: parent.height * 4 / 5
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#9B878B"
             text: "0"
             onClicked: qtcalculator.slotAddSymbol ('0')
         }
@@ -271,7 +323,8 @@ Window {
             y: parent.height * 4 / 5
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            //color: pressed ? "#e0b91c" : "#face20"
+            color: "#9B878B"
             text: "."
             onClicked: qtcalculator.slotAddSymbol ('.')
         }
@@ -282,7 +335,7 @@ Window {
             y: parent.height * 4 / 5
             width: parent.width / 4
             height: parent.height / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#9B878B"
             text: "C"
             onClicked: qtcalculator.slotClear ()
         }
@@ -293,9 +346,9 @@ Window {
             y: parent.height / 5
             width: parent.width / 4
             height: parent.height * 4 / 5
-            color: pressed ? "#e0b91c" : "#face20"
+            color: "#E88846"
             text: "="
-            onClicked: qtcalculator.slotExecute (resultText.text, timeoutTextField.text)
+            onClicked: qtcalculator.slotExecute (timeoutTextField.text)
         }
     }
 }

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <math.h>
 
-double doIt (short op, double a, double b, short *error = nullptr)
+double doIt (Operation op, double a, double b, short *error)
 {
     switch (op)
     {

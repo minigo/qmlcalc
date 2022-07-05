@@ -4,4 +4,4 @@ CONFIG += ordered
 
 SUBDIRS += \
     calc	\
-    qcalc
+    qcalc \

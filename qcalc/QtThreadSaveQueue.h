@@ -46,14 +46,14 @@ public:
         return item;
     }
 
-    std::optional<T> pop () {
-        QMutexLocker locker (&_mutex);
-        if (_queue.empty ())
-            return std::nullopt;
-        auto item = std::move (_queue.front ());
-        _queue.pop_front ();
-        return item;
-    }
+    //    std::optional<T> pop () {
+    //        QMutexLocker locker (&_mutex);
+    //        if (_queue.empty ())
+    //            return std::nullopt;
+    //        auto item = std::move (_queue.front ());
+    //        _queue.pop_front ();
+    //        return item;
+    //    }
 
 protected:
     mutable QMutex _mutex;
